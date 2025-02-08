@@ -1,15 +1,16 @@
 import { InlineCode } from "@/once-ui/components";
 
 const person = {
-  firstName: "Nouman",
-  lastName: "Usman",
+  firstName: "Muhammad",
+  lastName: "Nouman",
   get name() {
     return `${this.firstName} ${this.lastName}`;
   },
-  role: "Software Engineer",
+  role: "Generative AI Engineer",
   avatar: "/images/avatar.jpg",
-  location: "Asia/Pakistan", // Expecting the IANA time zone identifier, e.g., 'Europe/Vienna'
-  languages: ["English", "Urdu"], // optional: Leave the array empty if you don't want to display languages
+  location: "Asia/Pakistan", // IANA time zone identifier if necessary
+  languages: ["English", "Urdu"],
+  headline: "Generative AI Engineer",
 };
 
 const newsletter = {
@@ -17,34 +18,26 @@ const newsletter = {
   title: <>Subscribe to {person.firstName}'s Newsletter</>,
   description: (
     <>
-      I occasionally write about design, technology, and share thoughts on the intersection of
-      creativity and engineering.
+      I occasionally write about generative AI, technology, and my experiences in the tech industry.
     </>
   ),
 };
 
 const social = [
-  // Links are automatically displayed.
-  // Import new icons in /once-ui/icons.ts
   {
     name: "GitHub",
     icon: "github",
-    link: "https://github.com/once-ui-system/nextjs-starter",
+    link: "https://github.com/your-github-link", // Replace with your GitHub profile URL
   },
   {
     name: "LinkedIn",
     icon: "linkedin",
-    link: "https://www.linkedin.com/company/once-ui/",
-  },
-  {
-    name: "X",
-    icon: "x",
-    link: "",
+    link: "https://www.linkedin.com/in/muhammad-nouman/",
   },
   {
     name: "Email",
     icon: "email",
-    link: "mailto:example@gmail.com",
+    link: "mailto:2022cs49@student.uet.edu.pk",
   },
 ];
 
@@ -52,25 +45,25 @@ const home = {
   label: "Home",
   title: `${person.name}'s Portfolio`,
   description: `Portfolio website showcasing my work as a ${person.role}`,
-  headline: <>Design engineer and builder</>,
+  headline: <>{person.headline}</>,
   subline: (
     <>
-      I'm Selene, a design engineer at <InlineCode>FLY</InlineCode>, where I craft intuitive
-      <br /> user experiences. After hours, I build my own projects.
+      I'm {person.firstName}, a Generative AI Engineer with a passion for building innovative solutions.
+      I have experience developing AI-driven applications, teaching, and designing intuitive user experiences.
     </>
   ),
 };
 
 const about = {
   label: "About",
-  title: "About me",
-  description: `Meet ${person.name}, ${person.role} from ${person.location}`,
+  title: "About Me",
+  description: `Meet ${person.name}, a ${person.role} from ${person.location}.`,
+  avatar: {
+    display: true,
+  },
   tableOfContent: {
     display: true,
     subItems: false,
-  },
-  avatar: {
-    display: true,
   },
   calendar: {
     display: true,
@@ -81,108 +74,157 @@ const about = {
     title: "Introduction",
     description: (
       <>
-        Selene is a Jakarta-based design engineer with a passion for transforming complex challenges
-        into simple, elegant design solutions. Her work spans digital interfaces, interactive
-        experiences, and the convergence of design and technology.
+        I hold a B.Sc. in Computer Science from the University of Engineering and Technology (UET), Lahore and have
+        a strong background in developing generative AI solutions. My professional journey includes internships and roles
+        where I have excelled in design engineering, AI development, and teaching.
       </>
     ),
   },
   work: {
-    display: true, // set to false to hide this section
-    title: "Work Experience",
+    display: true,
+    title: "Experience",
     experiences: [
       {
-        company: "FLY",
-        timeframe: "2022 - Present",
-        role: "Senior Design Engineer",
+        company: "Xavor Corporation",
+        timeframe: "Jun 2024 – Sep 2024",
+        role: "Generative AI Intern",
         achievements: [
-          <>
-            Redesigned the UI/UX for the FLY platform, resulting in a 20% increase in user
-            engagement and 30% faster load times.
-          </>,
-          <>
-            Spearheaded the integration of AI tools into design workflows, enabling designers to
-            iterate 50% faster.
-          </>,
+          <>Achieved 9/10 proficiency in Open Source LLMs and ranked 3rd in my batch.</>,
         ],
         images: [
-          // optional: leave the array empty if you don't want to display images
           {
             src: "/images/projects/project-01/cover-01.jpg",
-            alt: "Once UI Project",
+            alt: "Xavor Corporation",
             width: 16,
             height: 9,
           },
         ],
       },
       {
-        company: "Creativ3",
-        timeframe: "2018 - 2022",
-        role: "Lead Designer",
+        company: "University of California, Irvine",
+        timeframe: "Aug 2024 – Sep 2024",
+        role: "Generative AI Developer",
         achievements: [
-          <>
-            Developed a design system that unified the brand across multiple platforms, improving
-            design consistency by 40%.
-          </>,
-          <>
-            Led a cross-functional team to launch a new product line, contributing to a 15% increase
-            in overall company revenue.
-          </>,
+          <>Developed a healthcare AI application that outperformed 20+ competing projects.</>,
+          <>Enhanced medical education by integrating generative AI technologies.</>,
+        ],
+        images: [],
+      },
+      {
+        company: "UET Lahore",
+        timeframe: "Sep 2023 – Present",
+        role: "Teaching Assistant",
+        achievements: [
+          <>Provided technical guidance leading to a 25% improvement in test scores.</>,
+          <>Designed and implemented effective teaching strategies.</>,
         ],
         images: [],
       },
     ],
   },
   studies: {
-    display: true, // set to false to hide this section
-    title: "Studies",
+    display: true,
+    title: "Education",
     institutions: [
       {
-        name: "University of Jakarta",
-        description: <>Studied software engineering.</>,
+        name: "University of Engineering and Technology (UET), Lahore, PK",
+        description: <>B.Sc. in Computer Science (Dec 2022 - Present) | CGPA: 3.32</>,
       },
       {
-        name: "Build the Future",
-        description: <>Studied online marketing and personal branding.</>,
+        name: "Cantt Public Boys College, Lahore Cantt, PK",
+        description: <>Intermediate in Pre-Engineering (Mar 2020 - May 2022) | Percentage: 88.6%</>,
       },
     ],
   },
   technical: {
-    display: true, // set to false to hide this section
-    title: "Technical skills",
+    display: true,
+    title: "Technical Skills",
     skills: [
       {
-        title: "Figma",
-        description: <>Able to prototype in Figma with Once UI with unnatural speed.</>,
-        // optional: leave the array empty if you don't want to display images
-        images: [
-          {
-            src: "/images/projects/project-01/cover-02.jpg",
-            alt: "Project image",
-            width: 16,
-            height: 9,
-          },
-          {
-            src: "/images/projects/project-01/cover-03.jpg",
-            alt: "Project image",
-            width: 16,
-            height: 9,
-          },
-        ],
+        title: "Python",
+        description: <>Proficient in Python for AI and backend development.</>,
+        images: [],
       },
       {
-        title: "Next.js",
-        description: <>Building next gen apps with Next.js + Once UI + Supabase.</>,
-        // optional: leave the array empty if you don't want to display images
-        images: [
-          {
-            src: "/images/projects/project-01/cover-04.jpg",
-            alt: "Project image",
-            width: 16,
-            height: 9,
-          },
-        ],
+        title: "C++",
+        description: <>Solid foundation in C++ development.</>,
+        images: [],
       },
+      {
+        title: "C#",
+        description: <>Experienced in building applications with C# and .NET (including Windows Forms).</>,
+        images: [],
+      },
+      {
+        title: "JavaScript & Next.js",
+        description: <>Skilled in modern web development with JavaScript and Next.js.</>,
+        images: [],
+      },
+      {
+        title: "HTML/CSS & Bootstrap",
+        description: <>Expert in crafting responsive and accessible web interfaces.</>,
+        images: [],
+      },
+      {
+        title: "Flask",
+        description: <>Developed backend solutions using the Flask framework.</>,
+        images: [],
+      },
+      {
+        title: "ASP.NET",
+        description: <>Built web applications using ASP.NET framework.</>,
+        images: [],
+      },
+      {
+        title: "MongoDB & MSSQL",
+        description: <>Experienced with both NoSQL and SQL database systems.</>,
+        images: [],
+      },
+      {
+        title: "OpenCV",
+        description: <>Applied computer vision techniques using OpenCV.</>,
+        images: [],
+      },
+      {
+        title: "Selenium",
+        description: <>Automated browser testing using Selenium.</>,
+        images: [],
+      },
+    ],
+  },
+  certifications: {
+    display: true,
+    title: "Certifications",
+    list: [
+      "GitHub Foundations",
+      "Classify Images With Tensorflow on Google Cloud",
+      "AZ-900 (Microsoft Azure Fundamentals)",
+      "Oracle Generative AI Professional",
+      "SQL (Basics)",
+      "Game Development with Unity",
+    ],
+  },
+  honors: {
+    display: true,
+    title: "Honors",
+    list: [
+      "HEC Scholarship (2023-26)",
+      "3rd Position in Startup Competition at ICOSS",
+      "Cricket Team Captain (SSC Level)",
+      "Highest Achiever in Matriculation",
+    ],
+  },
+  activities: {
+    display: true,
+    title: "Activities",
+    list: [
+      "Founder, Cipher Craft",
+      "Co-Founder, MLSA Punjab",
+      "Lead Public Relations, Software Square",
+      "Executive Member, UET X-NEWS",
+      "Hult Prize Campus Director",
+      "Microsoft Learn Student Ambassador",
+      "Hacker Earth Campus Ambassador",
     ],
   },
 };
@@ -190,24 +232,21 @@ const about = {
 const blog = {
   label: "Blog",
   title: "Writing about design and tech...",
-  description: `Read what ${person.name} has been up to recently`,
+  description: `Read what ${person.name} has been up to recently.`,
   // Create new blog posts by adding a new .mdx file to app/blog/posts
-  // All posts will be listed on the /blog route
 };
 
 const work = {
   label: "Work",
-  title: "My projects",
-  description: `Design and dev projects by ${person.name}`,
-  // Create new project pages by adding a new .mdx file to app/blog/posts
-  // All projects will be listed on the /home and /work routes
+  title: "My Projects",
+  description: `Design and development projects by ${person.name}.`,
+  // Create new project pages by adding a new .mdx file to app/work/projects
 };
 
 const gallery = {
   label: "Gallery",
-  title: "My photo gallery",
-  description: `A photo collection by ${person.name}`,
-  // Images from https://pexels.com
+  title: "My Photo Gallery",
+  description: `A photo collection by ${person.name}.`,
   images: [
     {
       src: "/images/gallery/img-01.jpg",
