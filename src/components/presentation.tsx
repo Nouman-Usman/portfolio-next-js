@@ -13,7 +13,7 @@ export function Presentation() {
     education: 'Bachelor of Computer Science @ UET Lahore',
     description:
       "Hey 👋\nI'm Nouman, a Computer Science student and AI Engineer passionate about building intelligent systems, SaaS products, and scalable tech. I’ve worked on Generative AI, RAG pipelines, and real-time AI-driven platforms. Alongside, I actively lead communities like Microsoft Learn Student Ambassadors and Cipher Craft to empower peers in AI and cloud technologies.",
-    src: '/profil-raph.png',
+    src: '/Nouman.jpg',
     fallbackSrc:
       'https://images.unsplash.com/photo-1610216705422-caa3fcb6d158?q=80&w=3560&auto=format&fit=crop&ixlib=rb-4.0.3',
   };
