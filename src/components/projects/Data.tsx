@@ -1,6 +1,15 @@
 import { ChevronRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
+import type { RepoMeta } from '@/types/github';
+
+// Export card shape used by carousel
+export type ProjectCard = {
+	category: string;
+	title: string;
+	src: string;
+	content: React.ReactNode;
+};
 
 // Static project content array
 export const STATIC_PROJECT_CONTENT = [
@@ -172,7 +181,7 @@ const ProjectContent = ({ project }: { project: ProjectProps }) => {
 };
 
 // Map a GitHub repo object to a "card" shape compatible with existing Carousel/Card usage
-function mapRepoToCard(repo: any) {
+function mapRepoToCard(repo: RepoMeta): ProjectCard {
 	const title = repo.full_name || repo.name || 'unknown';
 	const description = repo.description || 'No description';
 	const language = repo.language || '';
@@ -233,56 +242,20 @@ function mapRepoToCard(repo: any) {
 	};
 }
 
-// Map a static project entry to the same "card" shape used by the carousel
-function mapStaticToCard(p: {
-	title: string;
-	description?: string;
-	techStack?: string[];
-	date?: string;
-	links?: { name: string; url: string }[];
-	images?: { src: string; alt: string }[];
-}) {
-	const preview = (p.images && p.images[0]?.src) || '/virtualsharktank_preview.png';
-	const content = (
-		<div className="space-y-6">
-			<div className="rounded-3xl bg-[#F5F5F7] p-6 dark:bg-[#1D1D1F]">
-				<div>
-					<div className="flex items-center justify-between">
-						<div className="text-sm text-neutral-500 dark:text-neutral-400">{p.date}</div>
-						<span className="text-sm text-neutral-500 dark:text-neutral-400">
-							{p.techStack?.slice(0, 3).join(', ')}
-						</span>
-					</div>
-					<p className="mt-3 text-secondary-foreground text-base leading-relaxed md:text-lg">
-						{p.description}
-					</p>
-				</div>
-			</div>
-		</div>
-	);
-
-	return {
-		category: 'Project',
-		title: p.title,
-		src: preview,
-		content,
-	};
-}
-
 // Return combined array: GitHub-derived cards first (optional position filter), then static cards
 export async function getCombinedProjects(position?: string, limit = 12) {
 	try {
 		// Only return GitHub-derived cards (dynamic projects)
 		const ghCards = await fetchGithubProjects(position, limit);
 		return ghCards;
-	} catch (err) {
+	} catch (_err) {
 		// On error return empty list (no static projects)
 		return [];
 	}
 }
 
 // Fetch GitHub repos from your server route and return them mapped to card entries
-export async function fetchGithubProjects(position?: string, limit = 12) {
+export async function fetchGithubProjects(position?: string, limit = 12): Promise<ProjectCard[]> {
 	try {
 		const q = position ? `?position=${encodeURIComponent(position)}&per_page=${limit}` : `?per_page=${limit}`;
 		const res = await fetch(`/api/github/repos${q}`);
@@ -291,9 +264,8 @@ export async function fetchGithubProjects(position?: string, limit = 12) {
 		}
 		const repos = await res.json();
 		if (!Array.isArray(repos)) return [];
-		return repos.slice(0, limit).map(mapRepoToCard);
-	} catch (err) {
-		// on error, return empty list — caller can fallback to static content
+		return (repos as RepoMeta[]).slice(0, limit).map(mapRepoToCard);
+	} catch (_err) {
 		return [];
 	}
 }

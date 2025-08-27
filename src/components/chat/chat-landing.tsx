@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Award, Code, GraduationCap, Mail, MessageSquare } from 'lucide-react';
+import { Award, Code, Mail, MessageSquare } from 'lucide-react';
 import React from 'react';
 
 interface ChatLandingProps {
@@ -61,9 +61,9 @@ const ChatLanding: React.FC<ChatLandingProps> = ({ submitQuery }) => {
     >
       {/* Welcome message */}
       <motion.div className="mb-8 text-center" variants={itemVariants}>
-    <h2 className="mb-3 text-2xl font-semibold">
-      I'm Nouman's digital twin
-    </h2>
+        <h2 className="mb-3 text-2xl font-semibold">
+          I'm Nouman's digital twin
+        </h2>
         <p className="text-muted-foreground mx-auto max-w-md">
           The first portfolio that fit YOU needs.
         </p>

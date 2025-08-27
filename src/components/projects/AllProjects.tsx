@@ -1,16 +1,15 @@
 "use client";
 import { Card, Carousel } from "@/components/projects/apple-cards-carousel";
-import { fetchGithubProjects, getCombinedProjects } from "@/components/projects/Data";
+import { getCombinedProjects, ProjectCard } from "@/components/projects/Data";
 import { useEffect, useState } from "react";
 
 export default function AllProjects({ position }: { position?: string } = {}) {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      // Prefer combined helper which merges GitHub + static
       setLoading(true);
       const combined = await getCombinedProjects(position);
       if (!mounted) return;
@@ -39,3 +38,4 @@ export default function AllProjects({ position }: { position?: string } = {}) {
     </div>
   );
 }
+

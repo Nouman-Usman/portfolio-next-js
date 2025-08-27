@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { listUserRepos } from "@/app/api/chat/tools/list_repos";
+import type { RepoMeta } from "@/types/github";
 
 export const getProjects = tool({
   description:
@@ -62,7 +63,7 @@ export const getProjects = tool({
       return Array.from(keywords);
     }
 
-    function scoreRepoByKeywords(repo: any, keywords: string[]) {
+    function scoreRepoByKeywords(repo: RepoMeta, keywords: string[]) {
       if (!keywords.length) return 0;
       let score = 0;
       const name = String(repo.name || "").toLowerCase();
@@ -98,11 +99,11 @@ export const getProjects = tool({
 
     try {
       // fetch up to 100 repos (adjust pagination as needed)
-      const rawRepos: any[] = await listUserRepos(token, { per_page: 100 });
+      const rawRepos: RepoMeta[] = await listUserRepos(token, { per_page: 100 });
 
       const keywords = buildKeywordsForPosition(position);
       const mapped = rawRepos.map((r) => {
-        const md = {
+        const md: RepoMeta = {
           id: r.id,
           name: r.name,
           full_name: r.full_name,
@@ -116,26 +117,25 @@ export const getProjects = tool({
           stargazers_count: r.stargazers_count,
           forks_count: r.forks_count,
           open_issues_count: r.open_issues_count,
-          watchers_count: r.watchers_count ?? r.watchers,
+          watchers_count: r.watchers_count,
           created_at: r.created_at,
           updated_at: r.updated_at,
           pushed_at: r.pushed_at,
           license: r.license ? { name: r.license.name, spdx_id: r.license.spdx_id } : null,
           owner: r.owner ? { login: r.owner.login, html_url: r.owner.html_url, avatar_url: r.owner.avatar_url } : null,
         };
-        const score = keywords.length ? scoreRepoByKeywords(r, keywords) : 0;
+        const score = keywords.length ? scoreRepoByKeywords(r as RepoMeta, keywords) : 0;
         return { ...md, _score: score };
       });
 
       let result = mapped;
       if (keywords.length) {
         result = mapped
-          .filter((m) => m._score > 0)
+          .filter((m) => (m._score ?? 0) > 0)
           .sort(
             (a, b) =>
-              b._score !== a._score
-                ? b._score - a._score
-                : (b.stargazers_count || 0) - (a.stargazers_count || 0)
+              (b._score! - a._score!) ||
+              ((b.stargazers_count || 0) - (a.stargazers_count || 0))
           );
       } else {
         result = mapped.sort(
@@ -148,7 +148,7 @@ export const getProjects = tool({
         text: `Found ${result.length} repositories relevant to "${position}".`,
         repos: result,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return { text: `Failed to fetch repositories: ${String(err)}`, repos: [] };
     }
   },

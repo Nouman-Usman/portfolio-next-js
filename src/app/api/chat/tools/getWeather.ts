@@ -1,19 +1,13 @@
-
 import { tool } from "ai";
 import { z } from "zod";
 
 export const getWeather = tool({
   description:
-    "show the weather in a given city to the user",
-  parameters: z.object({
-    city: z.string().describe("The city to get weather for"),
-  }),
-  execute: async ({ city }: { city: string }) => {
-    const weatherOptions = ['sunny', 'cloudy', 'rainy', 'snowy', 'windy'];
-    // fake wait for weather data
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    return weatherOptions[
-      Math.floor(Math.random() * weatherOptions.length)
-    ];
+    "Return a short weather summary for a city (demo tool).",
+  parameters: z.object({ city: z.string().optional() }),
+  execute: async ({ city }: { city?: string }) => {
+    const target = city?.trim() || "your city";
+    // demo: return placeholder; real implementation would call a weather API
+    return `I don't have live weather access here, but I can show a demo for ${target}.`;
   },
 });

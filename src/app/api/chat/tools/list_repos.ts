@@ -1,5 +1,5 @@
-type RepoQuery = {
-	visibility?: 'all' | 'public';
+export type RepoQuery = {
+	visibility?: 'all' | 'public' | 'private';
 	affiliation?: string; // e.g. "owner,collaborator,organization_member"
 	type?: 'all' | 'public' | 'private' | 'forks' | 'sources' | 'member';
 	sort?: 'created' | 'updated' | 'pushed' | 'full_name';

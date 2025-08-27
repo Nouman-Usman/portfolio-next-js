@@ -1,4 +1,6 @@
 import { listUserRepos } from '@/app/api/chat/tools/list_repos';
+import type { RepoMeta } from '@/types/github';
+import type { RepoQuery } from '@/app/api/chat/tools/list_repos';
 
 function buildKeywordsForPosition(position?: string) {
 	if (!position) return [];
@@ -19,7 +21,7 @@ function buildKeywordsForPosition(position?: string) {
 	return Array.from(keywords);
 }
 
-function scoreRepoByKeywords(repo: any, keywords: string[]) {
+function scoreRepoByKeywords(repo: RepoMeta, keywords: string[]) {
 	if (!keywords.length) return 0;
 	let score = 0;
 	const textFields = [
@@ -73,12 +75,14 @@ export async function GET(req: Request) {
 
 	try {
 		// reuse server helper to fetch repos
-		const repos: any[] = await listUserRepos(token, paramsObj as any);
+		// cast parsed query params to the RepoQuery shape (avoid `any`)
+		const paramsTyped = (Object.keys(paramsObj).length ? (paramsObj as unknown as RepoQuery) : undefined);
+		const repos: RepoMeta[] = await listUserRepos(token, paramsTyped);
 
 		// map to metadata and optionally filter by position
 		const keywords = buildKeywordsForPosition(position);
 		const mapped = repos.map((r) => {
-			const md = {
+			const md: RepoMeta = {
 				id: r.id,
 				name: r.name,
 				full_name: r.full_name,
@@ -92,7 +96,7 @@ export async function GET(req: Request) {
 				stargazers_count: r.stargazers_count,
 				forks_count: r.forks_count,
 				open_issues_count: r.open_issues_count,
-				watchers_count: r.watchers_count ?? r.watchers,
+				watchers_count: r.watchers_count ?? 0,
 				created_at: r.created_at,
 				updated_at: r.updated_at,
 				pushed_at: r.pushed_at,
@@ -106,9 +110,9 @@ export async function GET(req: Request) {
 		let result = mapped;
 		if (keywords.length) {
 			// filter only relevant repos (score > 0) and sort by score desc, stars desc
-			result = mapped.filter((m) => m._score > 0)
+			result = mapped.filter((m) => (m._score ?? 0) > 0)
 				.sort((a, b) => {
-					if (b._score !== a._score) return b._score - a._score;
+					if ((b._score ?? 0) !== (a._score ?? 0)) return (b._score ?? 0) - (a._score ?? 0);
 					return (b.stargazers_count || 0) - (a.stargazers_count || 0);
 				});
 		} else {
@@ -120,9 +124,9 @@ export async function GET(req: Request) {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' },
 		});
-	} catch (err: any) {
+	} catch (err: unknown) {
 		// Preserve useful error message for client debugging
-		const msg = err?.message || String(err);
+		const msg = String(err);
 		return new Response(JSON.stringify({ error: 'Failed to fetch repos', details: msg }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' },
