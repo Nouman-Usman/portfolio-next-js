@@ -150,12 +150,6 @@ export default function HelperBoost({
   const [isVisible, setIsVisible] = useState(true);
   const [open, setOpen] = useState(false);
 
-  const handleQuestionClick = (questionKey: string) => {
-    if (submitQuery) {
-      submitQuery(questions[questionKey as keyof typeof questions]);
-    }
-  };
-
   const handleDrawerQuestionClick = (question: string) => {
     if (submitQuery) {
       submitQuery(question);
@@ -165,6 +159,27 @@ export default function HelperBoost({
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
+  };
+
+  // When Projects is clicked we first ask the assistant to request the desired
+  // job position from the user (so the chat flow stays inside the chat UI).
+  const handleQuestionClick = (questionKey: string) => {
+    if (!submitQuery) return;
+
+    if (questionKey === 'Projects') {
+      // Ask the assistant in-chat to ask the user which position they want to filter by.
+      // The assistant (chat backend) should then ask the user for the position, and
+      // subsequent user reply can trigger the repo search / display (existing chat flow).
+      submitQuery(
+        "I want to see projects relevant to a specific job. Please ask me which job position I'm looking for (e.g. 'AI Engineer')."
+      );
+
+      // Optionally prefill the chat input as a hint (user can edit or send).
+      if (setInput) setInput('AI Engineer');
+      return;
+    }
+
+    submitQuery(questions[questionKey as keyof typeof questions]);
   };
 
   return (

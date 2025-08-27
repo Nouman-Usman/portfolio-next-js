@@ -37,11 +37,40 @@ const questionConfig = [
 /* ---------- component ---------- */
 export default function Home() {
   const [input, setInput] = useState('');
+  const [repos, setRepos] = useState<any[] | null>(null);
+  const [reposLoading, setReposLoading] = useState(false);
+  const [reposError, setReposError] = useState<string | null>(null);
+  const [showReposPanel, setShowReposPanel] = useState(false);
+  const [reposPosition, setReposPosition] = useState<string>('');
+
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const goToChat = (query: string) =>
     router.push(`/chat?query=${encodeURIComponent(query)}`);
+
+  // Fetch repos for a given position and store metadata for UI rendering
+  async function fetchReposForPosition(position: string) {
+    setReposLoading(true);
+    setReposError(null);
+    setRepos(null);
+    setReposPosition(position);
+    try {
+      const url = `/api/github/repos?position=${encodeURIComponent(position)}&per_page=100`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        setReposError(data?.message || data?.error || `Status ${res.status}`);
+      } else {
+        setRepos(Array.isArray(data) ? data : []);
+      }
+    } catch (err: any) {
+      setReposError(String(err));
+    } finally {
+      setReposLoading(false);
+      setShowReposPanel(true);
+    }
+  }
 
   /* hero animations (unchanged) */
   const topElementVariants = {
@@ -91,15 +120,35 @@ export default function Home() {
           Toukoum
         </div>
       </div>
-
+      {/* add a GitHub button that popups the detail of repos when clicked on that button */}
+      
       {/* GitHub button */}
       <div className="absolute top-6 right-8 z-20">
         <GithubButton
-          //targetStars={68}
+          onClick={async () => {
+            try {
+              const position = prompt('Enter job position to filter repos', 'AI Engineer');
+              if (position === null) return; // user cancelled
+              const url = `/api/github/repos?position=${encodeURIComponent(position)}&per_page=100`;
+              const res = await fetch(url);
+              const data = await res.json();
+              if (!res.ok) {
+                console.error('GitHub API error (server):', data);
+                alert(`Failed to fetch repos: ${data?.message || data?.error || res.status}`);
+                return;
+              }
+              console.log(`repos for "${position}":`, data);
+              const names = Array.isArray(data) ? data.map((r: any) => `${r.full_name} (score:${r._score})`) : [];
+              alert(`${names.length} relevant repos for "${position}" — check console for details.`);
+            } catch (err) {
+              console.error(err);
+              alert('Failed to fetch GitHub repos. See console for details.');
+            }
+          }}
           animationDuration={1.5}
           label="Star"
           size={'sm'}
-          repoUrl="https://github.com/Nouman-Usman/portfolio-next-js"
+          repoUrl=""
         />
       </div>
 
@@ -188,7 +237,15 @@ export default function Home() {
           {questionConfig.map(({ key, color, icon: Icon }) => (
             <Button
               key={key}
-              onClick={() => goToChat(questions[key])}
+              onClick={async () => {
+                if (key === 'Projects') {
+                  const position = prompt('Which job position are you looking for?', 'AI Engineer');
+                  if (position === null) return; // cancelled
+                  await fetchReposForPosition(position.trim() || 'AI Engineer');
+                  return;
+                }
+                goToChat(questions[key]);
+              }}
               variant="outline"
               className="border-border hover:bg-border/30 aspect-square w-full cursor-pointer rounded-2xl border bg-white/30 py-8 shadow-none backdrop-blur-lg active:scale-95 md:p-10"
             >
@@ -200,6 +257,79 @@ export default function Home() {
           ))}
         </div>
       </motion.div>
+
+      {/* Repos Modal / Panel */}
+      {showReposPanel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowReposPanel(false)}
+          />
+          <div className="relative z-10 max-h-[80vh] w-[92%] max-w-4xl overflow-auto rounded-2xl bg-white p-6 shadow-lg dark:bg-neutral-900">
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold">Repos for “{reposPosition}”</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {reposLoading ? 'Loading…' : reposError ? `Error: ${reposError}` : `${repos?.length ?? 0} repos`}
+                </p>
+              </div>
+              <div>
+                <button
+                  onClick={() => setShowReposPanel(false)}
+                  className="rounded-full bg-neutral-100 px-3 py-1 text-sm hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {reposLoading && <div className="py-8 text-center">Loading repositories…</div>}
+
+            {!reposLoading && reposError && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{reposError}</div>
+            )}
+
+            {!reposLoading && !reposError && repos && repos.length === 0 && (
+              <div className="py-8 text-center text-sm text-muted-foreground">No repositories matched that position.</div>
+            )}
+
+            {!reposLoading && repos && repos.length > 0 && (
+              <ul className="space-y-3">
+                {repos.map((r) => (
+                  <li key={r.id} className="rounded-xl border p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <a
+                          href={r.html_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-blue-600 dark:text-blue-400"
+                        >
+                          {r.full_name}
+                        </a>
+                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                          {r.description || 'No description'}
+                        </p>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.language || '—'}</span>
+                          <span className="rounded-full bg-neutral-100 px-2 py-0.5">⭐ {r.stargazers_count ?? 0}</span>
+                          <span className="rounded-full bg-neutral-100 px-2 py-0.5">forks {r.forks_count ?? 0}</span>
+                          <span className="rounded-full bg-neutral-100 px-2 py-0.5">score {r._score ?? 0}</span>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 text-right text-xs text-muted-foreground">
+                        <div>{r.visibility}</div>
+                        <div className="mt-2">{new Date(r.pushed_at).toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
       <FluidCursor />
     </div>
   );
