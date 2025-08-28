@@ -1,25 +1,54 @@
 "use client";
 import { Card, Carousel } from "@/components/projects/apple-cards-carousel";
-import { getCombinedProjects, ProjectCard } from "@/components/projects/Data";
+import { getCombinedProjects, ProjectCard, mapReposToCards } from "@/components/projects/Data";
 import { useEffect, useState } from "react";
 
-export default function AllProjects({ position }: { position?: string } = {}) {
-  const [projects, setProjects] = useState<ProjectCard[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function AllProjects({
+  position,
+  initialRepos, // optional array of RepoMeta returned by the tool
+  initialCards, // optional pre-mapped ProjectCard[]
+}: {
+  position?: string;
+  initialRepos?: any[]; // RepoMeta[]
+  initialCards?: ProjectCard[];
+} = {}) {
+  const [projects, setProjects] = useState<ProjectCard[]>(initialCards ?? []);
+  const [loading, setLoading] = useState(!initialCards?.length);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       setLoading(true);
+
+      // Priority:
+      // 1) Use already-mapped cards if provided
+      if (initialCards && initialCards.length > 0) {
+        if (!mounted) return;
+        setProjects(initialCards);
+        setLoading(false);
+        return;
+      }
+
+      // 2) If the tool provided raw repo metadata, map it once (ensures same data shown)
+      if (initialRepos && Array.isArray(initialRepos) && initialRepos.length > 0) {
+        const mapped = await mapReposToCards(initialRepos);
+        if (!mounted) return;
+        setProjects(mapped || []);
+        setLoading(false);
+        return;
+      }
+
+      // 3) Otherwise fetch using position (normal behavior)
       const combined = await getCombinedProjects(position);
       if (!mounted) return;
       setProjects(combined || []);
       setLoading(false);
     })();
+
     return () => {
       mounted = false;
     };
-  }, [position]);
+  }, [position, initialRepos, initialCards]);
 
   const cards = projects.map((card, index) => (
     <Card key={`${card.title}-${index}`} card={card} index={index} layout={true} />

@@ -100,17 +100,14 @@ export default function Home() {
             try {
               const position = prompt('Enter job position to filter repos', 'AI Engineer');
               if (position === null) return; // user cancelled
-              const url = `/api/github/repos?position=${encodeURIComponent(position)}&per_page=100`;
-              const res = await fetch(url);
-              const data = await res.json();
-              if (!res.ok) {
-                console.error('GitHub API error (server):', data);
-                alert(`Failed to fetch repos: ${data?.message || data?.error || res.status}`);
-                return;
+              
+              // Use our structured API endpoint to fetch repos
+              const url = `/api/github/repos?position=${encodeURIComponent(position || '')}&per_page=10`;
+              
+              // Redirect to chat with a query to show projects for this position
+              if (position) {
+                router.push(`/chat?query=Show me your projects relevant to ${position}`);
               }
-              console.log(`repos for "${position}":`, data);
-              const names = Array.isArray(data) ? data.map((r: any) => `${r.full_name} (score:${r._score})`) : [];
-              alert(`${names.length} relevant repos for "${position}" — check console for details.`);
             } catch (err) {
               console.error(err);
               alert('Failed to fetch GitHub repos. See console for details.');

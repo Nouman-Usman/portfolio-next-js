@@ -56,6 +56,53 @@ function scoreRepoByKeywords(repo: RepoMeta, keywords: string[]) {
 	return score;
 }
 
+// New helper: fetch README and extract first markdown image and first meaningful paragraph
+async function fetchReadmeInfo(owner: string, name: string) {
+	// try common branches
+	const branches = ['main', 'master', 'gh-pages'];
+	for (const branch of branches) {
+		try {
+			const rawUrl = `https://raw.githubusercontent.com/${owner}/${name}/${branch}/README.md`;
+			const res = await fetch(rawUrl);
+			if (!res.ok) continue;
+			const md = await res.text();
+
+			// first image
+			const imgMatch = md.match(/!\[.*?\]\((.*?)\)/);
+			let image = '';
+			if (imgMatch && imgMatch[1]) {
+				let src = imgMatch[1].trim();
+				if (!/^https?:\/\//i.test(src)) {
+					src = src.replace(/^\.?\/+/, '');
+					image = `https://raw.githubusercontent.com/${owner}/${name}/${branch}/${src}`;
+				} else {
+					image = src;
+				}
+			}
+
+			// strip images/badges/comments and take first paragraph
+			const cleaned = md
+				.replace(/!\[.*?\]\(.*?\)/g, '')
+				.replace(/\[!\[.*?\]\(.*?\)\]\(.*?\)/g, '')
+				.replace(/^\s*\[.*?\]:.*$/gm, '')
+				.replace(/^\s*<!--[\s\S]*?-->\s*$/gm, '')
+				.replace(/^\s*\[badge.*$/gim, '');
+
+			const parts = cleaned
+				.split(/\n\s*\n/)
+				.map((p) => p.replace(/\r/g, '').trim())
+				.filter(Boolean);
+
+			const description = parts.length ? parts[0].replace(/\[(.*?)\]\((.*?)\)/g, '$1') : '';
+
+			return { image, description };
+		} catch {
+			continue;
+		}
+	}
+	return { image: '', description: '' };
+}
+
 // Simple Next.js Route Handler for GET /api/github/repos
 export async function GET(req: Request) {
 	// Server-only token (must be set in your environment)
@@ -75,13 +122,14 @@ export async function GET(req: Request) {
 
 	try {
 		// reuse server helper to fetch repos
-		// cast parsed query params to the RepoQuery shape (avoid `any`)
 		const paramsTyped = (Object.keys(paramsObj).length ? (paramsObj as unknown as RepoQuery) : undefined);
 		const repos: RepoMeta[] = await listUserRepos(token, paramsTyped);
 
 		// map to metadata and optionally filter by position
 		const keywords = buildKeywordsForPosition(position);
-		const mapped = repos.map((r) => {
+
+		// fetch README info for each repo in parallel (server-side) and attach to metadata
+		const mappedPromises = repos.map(async (r) => {
 			const md: RepoMeta = {
 				id: r.id,
 				name: r.name,
@@ -103,20 +151,36 @@ export async function GET(req: Request) {
 				license: r.license ? { name: r.license.name, spdx_id: r.license.spdx_id } : null,
 				owner: r.owner ? { login: r.owner.login, html_url: r.owner.html_url, avatar_url: r.owner.avatar_url } : null,
 			};
+
+			// compute score
 			const score = keywords.length ? scoreRepoByKeywords(r, keywords) : 0;
-			return { ...md, _score: score };
+
+			// try to enrich with README info (single-server fetch)
+			let readmeImage = '';
+			let readmeDescription = '';
+			try {
+				if (md.owner && md.owner.login && md.name) {
+					const info = await fetchReadmeInfo(String(md.owner.login), String(md.name));
+					readmeImage = info.image || '';
+					readmeDescription = info.description || '';
+				}
+			} catch {
+				// ignore readme errors
+			}
+
+			return { ...md, _score: score, readme_image: readmeImage, readme_description: readmeDescription };
 		});
+
+		const mapped = await Promise.all(mappedPromises);
 
 		let result = mapped;
 		if (keywords.length) {
-			// filter only relevant repos (score > 0) and sort by score desc, stars desc
 			result = mapped.filter((m) => (m._score ?? 0) > 0)
 				.sort((a, b) => {
 					if ((b._score ?? 0) !== (a._score ?? 0)) return (b._score ?? 0) - (a._score ?? 0);
 					return (b.stargazers_count || 0) - (a.stargazers_count || 0);
 				});
 		} else {
-			// when no position specified, sort by stars
 			result = mapped.sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0));
 		}
 

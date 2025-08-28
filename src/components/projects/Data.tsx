@@ -16,7 +16,7 @@ export const STATIC_PROJECT_CONTENT = [
 	{
 		title: 'Virtual Shark Tank Pakistan',
 		description:
-			'A real-time virtual pitching platform with AI-powered “shark” investors and human feedback, supporting both English and Urdu. Features low-latency video/audio streaming, AI-driven questioning using LangChain + OpenAI, and real-time chat & session management.',
+			'A real-time virtual pitching platform with AI-powered "shark" investors and human feedback, supporting both English and Urdu. Features low-latency video/audio streaming, AI-driven questioning using LangChain + OpenAI, and real-time chat & session management.',
 		techStack: ['Next.js', 'WebRTC', 'Node.js', 'LangChain', 'OpenAI', 'Socket.io'],
 		date: '2025',
 		links: [
@@ -83,7 +83,6 @@ export const STATIC_PROJECT_CONTENT = [
 	},
 ];
 
-// Define interface for project prop (unchanged)
 interface ProjectProps {
 	title: string;
 	description?: string;
@@ -180,13 +179,15 @@ const ProjectContent = ({ project }: { project: ProjectProps }) => {
 	);
 };
 
-// Map a GitHub repo object to a "card" shape compatible with existing Carousel/Card usage
-function mapRepoToCard(repo: RepoMeta): ProjectCard {
+// Async mapper that uses server-provided README-derived image & description
+export async function mapRepoToCardAsync(repo: RepoMeta): Promise<ProjectCard> {
 	const title = repo.full_name || repo.name || 'unknown';
-	const description = repo.description || 'No description';
 	const language = repo.language || '';
 	const topics = Array.isArray(repo.topics) ? repo.topics : [];
-	const preview = repo.owner?.avatar_url || '/virtualsharktank_preview.png';
+
+	// Server attaches these fields: readme_image, readme_description
+	const preview = (repo as any).readme_image || ''; // server-provided or empty
+	const description = (repo as any).readme_description || repo.description || 'No description';
 
 	const content = (
 		<div className="space-y-6">
@@ -237,19 +238,26 @@ function mapRepoToCard(repo: RepoMeta): ProjectCard {
 	return {
 		category: 'GitHub',
 		title,
-		src: preview,
+		src: preview, // server-provided README image or empty
 		content,
 	};
 }
 
-// Return combined array: GitHub-derived cards first (optional position filter), then static cards
+// New helper to map many repos using the same mapper
+export async function mapReposToCards(repos: RepoMeta[] = []): Promise<ProjectCard[]> {
+	try {
+		return await Promise.all(repos.map((r) => mapRepoToCardAsync(r)));
+	} catch (_err) {
+		return [];
+	}
+}
+
+// Return combined array: only GitHub-derived cards (dynamic projects)
 export async function getCombinedProjects(position?: string, limit = 12) {
 	try {
-		// Only return GitHub-derived cards (dynamic projects)
 		const ghCards = await fetchGithubProjects(position, limit);
 		return ghCards;
 	} catch (_err) {
-		// On error return empty list (no static projects)
 		return [];
 	}
 }
@@ -264,7 +272,11 @@ export async function fetchGithubProjects(position?: string, limit = 12): Promis
 		}
 		const repos = await res.json();
 		if (!Array.isArray(repos)) return [];
-		return (repos as RepoMeta[]).slice(0, limit).map(mapRepoToCard);
+
+		// Map asynchronously so we can fetch README data per repo
+		const sliced = (repos as RepoMeta[]).slice(0, limit);
+		const cards = await Promise.all(sliced.map((r) => mapRepoToCardAsync(r)));
+		return cards;
 	} catch (_err) {
 		return [];
 	}
