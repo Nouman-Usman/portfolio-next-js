@@ -308,6 +308,12 @@ export const BlurImage = ({
   ...rest
 }: ImageProps) => {
   const [isLoading, setLoading] = useState(true);
+
+  // Don't render if src is empty string
+  if (src === '') {
+    return null;
+  }
+
   return (
     <Image
       className={cn(
