@@ -93,7 +93,6 @@ export default function ToolRenderer({
                 <div key={toolCallId} className="w-full rounded-lg">
                   <AllProjects 
                     position={position} 
-                    initialRepos={initialRepos} 
                   />
                 </div>
               );
