@@ -101,7 +101,7 @@ export function useLinkedin({ username, includeEmail = true }: UseLinkedinOption
 
             try {
                 const response = await fetch(
-                    'https://api.apify.com/v2/acts/apimaestro~linkedin-profile-detail/run-sync-get-dataset-items?token=apify_api_1PkrZDUq7wcQGubRgc6s3fLu8WrNyr0oh5bw',
+                    'https://api.apify.com/v2/acts/apimaestro~linkedin-profile-detail/run-sync-get-dataset-items?token=',
                     {
                         method: 'POST',
                         headers: {
