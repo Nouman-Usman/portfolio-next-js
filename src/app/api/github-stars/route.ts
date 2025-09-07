@@ -1,7 +1,7 @@
 export async function GET() {
-  const res = await fetch('https://api.github.com/repos/Nouman-Usman/portfolio', {
+  const res = await fetch('https://api.github.com/repos/Nouman-Usman/portfolio-next-js', {
     headers: {
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
       Accept: 'application/vnd.github+json',
     },
   });

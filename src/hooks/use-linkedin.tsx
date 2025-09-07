@@ -1,134 +1,236 @@
 import { useState, useEffect } from 'react';
 
-interface ExperienceItem {
-	company?: string;
-	company_id?: string;
-	company_linkedin_url?: string;
-	company_logo_url?: string;
-	title?: string;
-	location?: string;
-	location_type?: string;
-	employment_type?: string;
-	duration?: string;
-	start_date?: { year?: number; month?: string };
-	end_date?: { year?: number; month?: string };
-	is_current?: boolean;
-	skills?: string[];
-	skills_url?: string;
-}
-
-interface EducationItem {
-	school?: string;
-	school_id?: string;
-	school_linkedin_url?: string;
-	school_logo_url?: string;
-	degree?: string;
-	degree_name?: string;
-	field_of_study?: string;
-	activities?: string;
-	duration?: string;
-	start_date?: { year?: number; month?: string };
-	end_date?: { year?: number; month?: string };
-}
-
-interface CertificationItem {
-	name?: string;
-	issuer?: string;
-	issued_date?: string;
+// Define types based on the LinkedIn API response structure
+interface Location {
+  country: string;
+  city: string;
+  full: string;
+  country_code: string;
 }
 
 interface BasicInfo {
-	fullname?: string;
-	first_name?: string;
-	last_name?: string;
-	headline?: string;
-	public_identifier?: string;
-	profile_picture_url?: string;
-	about?: string;
-	location?: {
-		country?: string;
-		city?: string;
-		full?: string;
-		country_code?: string;
-	};
-	creator_hashtags?: string[];
-	is_creator?: boolean;
-	is_influencer?: boolean;
-	is_premium?: boolean;
-	created_timestamp?: number;
-	show_follower_count?: boolean;
-	background_picture_url?: string;
-	urn?: string;
-	follower_count?: number;
-	connection_count?: number;
-	current_company?: string;
-	current_company_urn?: string;
-	current_company_url?: string;
-	email?: string | null;
+  fullname: string;
+  first_name: string;
+  last_name: string;
+  headline: string;
+  public_identifier: string;
+  profile_picture_url: string;
+  about: string;
+  location: Location;
+  creator_hashtags: string[];
+  is_creator: boolean;
+  is_influencer: boolean;
+  is_premium: boolean;
+  created_timestamp: number;
+  show_follower_count: boolean;
+  background_picture_url: string;
+  urn: string;
+  follower_count: number;
+  connection_count: number;
+  current_company: string;
+  current_company_urn: string;
+  current_company_url: string;
+  email: string | null;
 }
 
-interface LinkedinProfile {
-	// new structured response
-	basic_info?: BasicInfo;
-	experience?: ExperienceItem[];
-	education?: EducationItem[];
-	certifications?: CertificationItem[];
-
-	// keep a few legacy/compatibility fields optional in case other parts of the app expect them
-	fullName?: string;
-	headline?: string;
-	profilePictureUrl?: string;
-	summary?: string;
-	skills?: string[];
+interface DateInfo {
+  month: string;
+  year: number;
 }
 
-interface UseLinkedinOptions {
-    username: string;
-    includeEmail?: boolean;
+interface Experience {
+  title: string;
+  company: string;
+  company_logo_url: string;
+  duration: string;
+  location: string;
+  employment_type: string;
+  company_linkedin_url: string;
+  description: string;
+  start_date: DateInfo;
+  end_date: DateInfo;
+  is_current: boolean;
+  skills: string[];
 }
 
-export function useLinkedin({ username, includeEmail = true }: UseLinkedinOptions) {
-    const [profile, setProfile] = useState<LinkedinProfile | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+interface Education {
+  school: string;
+  degree: string;
+  degree_name: string;
+  field_of_study: string;
+  duration: string;
+  school_linkedin_url: string;
+  description: string;
+  activities: string;
+  school_logo_url: string;
+  start_date: DateInfo;
+  end_date: DateInfo;
+  grade: string;
+}
 
-    useEffect(() => {
-        if (!username) return;
+interface Certification {
+  name: string;
+  organization: string;
+  organization_urn: string;
+  credential_id: string;
+  issue_date: string;
+  expiration_date: string | null;
+  skills: string[];
+  credential_url: string;
+}
 
-        const fetchProfile = async () => {
-            setLoading(true);
-            setError(null);
+interface Skill {
+  name: string;
+  endorsement_count: number;
+  related_experiences: string[];
+}
 
-            try {
-                const response = await fetch(
-                    'https://api.apify.com/v2/acts/apimaestro~linkedin-profile-detail/run-sync-get-dataset-items?token=',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            includeEmail,
-                            username,
-                        }),
-                    }
-                );
+interface Recommendation {
+  recommender_name: string;
+  recommender_title: string;
+  recommender_profile_id: string;
+  recommendation_date: string;
+  relationship: string;
+  recommendation_text: string;
+}
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch LinkedIn profile');
-                }
+interface Recommendations {
+  received_recommendations: Recommendation[];
+  given_recommendations: Recommendation[];
+}
 
-                const data = await response.json();
-                setProfile(data[0] || null);
-            } catch (err: any) {
-                setError(err.message || 'Unknown error');
-            } finally {
-                setLoading(false);
-            }
-        };
+interface VolunteeringExperience {
+  title: string;
+  organization_name: string;
+  organization_urn: string;
+  start_date: string;
+  end_date: string;
+  duration: string;
+  sector: string;
+  description: string;
+}
 
-        fetchProfile();
-    }, [username, includeEmail]);
+interface LinkedInProfile {
+  profileUrl: string;
+  basic_info: BasicInfo;
+  experience: Experience[];
+  education: Education[];
+  certifications: Certification[];
+  skills: Skill[];
+  recommendations: Recommendations;
+  "volunteering-experiences": VolunteeringExperience[];
+}
 
-    return { profile, loading, error };
+interface UseLinkedInOptions {
+  apiEndpoint?: string;
+  autoFetch?: boolean;
+  profileUrl?: string;
+  includeEmail?: boolean;
+}
+
+export function useLinkedIn(options?: UseLinkedInOptions) {
+  const apify_token = process.env.NEXT_PUBLIC_APIFY_TOKEN || 'apify_api_JdRR9FTJqOobU5RtdxfrVLzoBbr34t3NPLY8';
+  const defaultEndpoint = `https://api.apify.com/v2/acts/apimaestro~linkedin-profile-detail/run-sync-get-dataset-items?token=${apify_token}`;
+  const apiEndpoint = options?.apiEndpoint || defaultEndpoint;
+  const autoFetch = options?.autoFetch !== false;
+  const profileUrl = options?.profileUrl || "https://www.linkedin.com/in/nouman-usman/";
+  const includeEmail = options?.includeEmail ?? false;
+  
+  const [linkedInData, setLinkedInData] = useState<LinkedInProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(autoFetch);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchLinkedInData = async (): Promise<LinkedInProfile | null> => {
+    try {
+      setLoading(true);
+      console.log("Fetching LinkedIn data from:", apiEndpoint);
+      const requestBody = {
+        username: profileUrl, 
+        includeEmail: includeEmail
+      };
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch LinkedIn data: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log("LinkedIn API response:", data);
+      
+      if (data && data.length > 0) {
+        const profileData = data[0];
+        setLinkedInData(profileData);
+        return profileData;
+      } else {
+        throw new Error('No LinkedIn data available');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('An unknown error occurred'));
+      console.error('Error fetching LinkedIn data:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (autoFetch) {
+      fetchLinkedInData().catch(err => console.error("Failed initial LinkedIn data fetch:", err));
+    }
+  }, [apiEndpoint, autoFetch, profileUrl, includeEmail]);
+
+  return { 
+    linkedInData, 
+    loading, 
+    error, 
+    fetchLinkedInData 
+  };
+}
+
+// Standalone function for fetching LinkedIn profile data (doesn't use hooks)
+export async function fetchLinkedInProfile(options?: UseLinkedInOptions): Promise<LinkedInProfile | null> {
+  const apify_token = process.env.NEXT_PUBLIC_APIFY_TOKEN || '';
+  const defaultEndpoint = `https://api.apify.com/v2/acts/apimaestro~linkedin-profile-full-sections-scraper/run-sync-get-dataset-items?token=${apify_token}`;
+  const apiEndpoint = options?.apiEndpoint || defaultEndpoint;
+  const profileUrl = options?.profileUrl || "https://www.linkedin.com/in/nouman-usman/";
+  const includeEmail = options?.includeEmail ?? false;
+  
+  try {
+    console.log("Fetching LinkedIn data from (standalone):", apiEndpoint);
+    const requestBody = {
+      username: profileUrl, 
+      includeEmail: includeEmail
+    };
+
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch LinkedIn data: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log("LinkedIn API response (standalone):", data);
+    
+    if (data && data.length > 0) {
+      return data[0];
+    } else {
+      throw new Error('No LinkedIn data available');
+    }
+  } catch (err) {
+    console.error('Error in standalone LinkedIn fetch:', err);
+    throw err;
+  }
 }

@@ -92,7 +92,7 @@ export const getProjects = tool({
     }
 
     // Server-only: ensure token present and fetch user's repos via helper
-    const token = process.env.GITHUB_TOKEN;
+    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
     if (!token) {
       return { text: "Server error: GITHUB_TOKEN not configured.", repos: [] };
     }

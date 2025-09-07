@@ -15,7 +15,6 @@ interface ToolRendererProps {
   messageId: string;
 }
 
-// Helper function to extract position from tool invocation
 function extractPositionFromTool(tool: any): string | undefined {
   try {
     // Try multiple locations where position might be stored

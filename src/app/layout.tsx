@@ -16,37 +16,36 @@ export const metadata: Metadata = {
   title: "Nouman's Portfolio",
   description: "Interactive portfolio with an AI-powered Memoji that answers questions about me, my skills, and my experience",
   keywords: [
-    "Toukoum", 
+    "Nouman", 
     "Portfolio", 
     "Developer", 
     "AI", 
-    "Interactive", 
-    "Memoji", 
-    "Web Development",
+    "Interactive",  
+    "AI Engineer",
     "Full Stack",
     "Next.js",
     "React"
   ],
   authors: [
     {
-      name: "Toukoum",
-      url: "https://toukoum.fr",
+      name: "Nouman",
+      url: "https://www.linkedin.com/in/nouman-usman/",
     },
   ],
-  creator: "Toukoum",
+  creator: "Nouman",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://toukoum.fr",
-    title: "Toukoum Portfolio",
+    url: "https://www.linkedin.com/in/nouman-usman/",
+    title: "Nouman's Portfolio",
     description: "Interactive portfolio with an AI-powered Memoji that answers questions about me",
-    siteName: "Toukoum Portfolio",
+    siteName: "Nouman's Portfolio",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Toukoum Portfolio",
+    title: "Nouman's Portfolio",
     description: "Interactive portfolio with an AI-powered Memoji that answers questions about me",
-    creator: "@toukoum",
+    creator: "@nouman",
   },
   icons: {
     icon: [

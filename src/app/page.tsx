@@ -3,8 +3,10 @@
 import FluidCursor from '@/components/FluidCursor';
 import { Button } from '@/components/ui/button';
 import { GithubButton } from '@/components/ui/github-button';
+import { useGitHubUsername } from '../hooks/get_username';
 import WelcomeModal from '@/components/welcome-modal';
 import { motion } from 'framer-motion';
+import {fetchDynamicSkills} from '@/components/skills';
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -39,9 +41,9 @@ export default function Home() {
   const [input, setInput] = useState('');
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-
   const goToChat = (query: string) =>
     router.push(`/chat?query=${encodeURIComponent(query)}`);
+  const { username, loading, error , bio, name} = useGitHubUsername();
 
   /* hero animations (unchanged) */
   const topElementVariants = {
@@ -62,13 +64,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Précharger les assets du chat en arrière-plan
     const img = new window.Image();
     img.src = '/landing-memojis.png';
 
-    // Précharger les vidéos aussi
     const linkWebm = document.createElement('link');
-    linkWebm.rel = 'preload'; // Note: prefetch au lieu de preload
+    linkWebm.rel = 'preload'; 
     linkWebm.as = 'video';
     linkWebm.href = '/final_memojis.webm';
     document.head.appendChild(linkWebm);
@@ -80,6 +80,19 @@ export default function Home() {
     document.head.appendChild(linkMp4);
   }, []);
 
+  useEffect(() => {
+    if (!name) return;
+    (async () => {
+      try {
+        console.log('Fetching dynamic skills for:', name);
+        const skills = await fetchDynamicSkills(name);
+        console.log('Fetched dynamic skills:', skills);
+      } catch (error) {
+        console.error('Error fetching dynamic skills:', error);
+      }
+    })();
+  }, [name]);
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pb-10 md:pb-20">
       {/* big blurred footer word */}
@@ -88,7 +101,7 @@ export default function Home() {
           className="hidden bg-gradient-to-b from-neutral-500/10 to-neutral-500/0 bg-clip-text text-[10rem] leading-none font-black text-transparent select-none sm:block lg:text-[16rem]"
           style={{ marginBottom: '-2.5rem' }}
         >
-          Toukoum
+          Nouman
         </div>
       </div>
       {/* add a GitHub button that popups the detail of repos when clicked on that button */}
@@ -119,7 +132,7 @@ export default function Home() {
           repoUrl=""
         />
       </div>
-
+      
       <div className="absolute top-6 left-6 z-20">
         <button
           onClick={() => goToChat('Are you looking for an internship?')}
@@ -146,10 +159,17 @@ export default function Home() {
         </div>
 
         <h2 className="text-secondary-foreground mt-1 text-xl font-semibold md:text-2xl">
-          Hey, I'm Nouman 👋
+          Hey, I'm {loading ? (
+            <span className="inline-block animate-pulse">loading...</span>
+          ) : error ? (
+            console.log(error),
+            <span className="text-red-500">{error.message}</span>
+          ) : (
+            username || 'Guest'
+          )} 👋
         </h2>
         <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
-          AI Engineer
+          {bio || 'No bio available'}
         </h1>
       </motion.div>
 

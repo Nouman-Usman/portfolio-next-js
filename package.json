@@ -37,6 +37,7 @@
     "react-dom": "^19.0.0",
     "react-github-btn": "^1.4.0",
     "react-markdown": "^10.1.0",
+    "react-responsive-carousel": "^3.2.23",
     "remark-gfm": "^4.0.1",
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",

@@ -106,7 +106,7 @@ async function fetchReadmeInfo(owner: string, name: string) {
 // Simple Next.js Route Handler for GET /api/github/repos
 export async function GET(req: Request) {
 	// Server-only token (must be set in your environment)
-	const token = process.env.GITHUB_TOKEN;
+	const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 	if (!token) {
 		return new Response(JSON.stringify({ error: 'GITHUB_TOKEN not set on server' }), {
 			status: 500,
