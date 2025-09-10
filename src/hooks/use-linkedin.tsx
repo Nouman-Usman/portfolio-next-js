@@ -129,7 +129,7 @@ interface UseLinkedInOptions {
 }
 
 export function useLinkedIn(options?: UseLinkedInOptions) {
-  const apify_token = process.env.NEXT_PUBLIC_APIFY_TOKEN || 'apify_api_JdRR9FTJqOobU5RtdxfrVLzoBbr34t3NPLY8';
+  const apify_token = process.env.NEXT_PUBLIC_APIFY_TOKEN || '';
   const defaultEndpoint = `https://api.apify.com/v2/acts/apimaestro~linkedin-profile-detail/run-sync-get-dataset-items?token=${apify_token}`;
   const apiEndpoint = options?.apiEndpoint || defaultEndpoint;
   const autoFetch = options?.autoFetch !== false;
